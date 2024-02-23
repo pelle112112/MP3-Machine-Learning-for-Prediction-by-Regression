@@ -11,6 +11,7 @@ from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tabulate import tabulate
+import pickle
 
 # Datapreparation
 
@@ -117,7 +118,6 @@ def analyze_and_remove_outliers(data, feature='price', title='Outlier Analysis')
 cleanedDF = analyze_and_remove_outliers(houseDf, feature='price', title='Housing price analysis')
 
 
-
 # Train the model with Linear Regression
 
 X = cleanedDF['sqft_living'].values.reshape(-1,1)
@@ -140,7 +140,7 @@ plt.show()
 
 # Split the data into training and testing sets
 
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.15, random_state=123)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.19, random_state=123)
 
 print(X_train.shape)
 print(Y_train.shape)
@@ -269,3 +269,20 @@ def vizPolynomialSmooth():
 
 vizPolynomialSmooth()
 
+'''
+# Store the model
+modelFile = '../model/Regressionmodel.pkl'
+
+# Save the model
+with open(modelFile, 'wb') as file:
+    pickle.dump(pol_reg, file)
+
+# Load the model
+with open(modelFile, 'rb') as file:
+    loadedModel = pickle.load(file)
+
+# Test reading the model
+predict = np.poly1d(loadedModel)
+vizPolynomialSmooth(2000)
+print(predict)
+'''
