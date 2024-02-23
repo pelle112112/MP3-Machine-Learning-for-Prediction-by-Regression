@@ -8,6 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 import sklearn.metrics as sm
 from sklearn.preprocessing import PolynomialFeatures
+import numpy as np
 
 
 # Data wrangling
@@ -21,8 +22,8 @@ print(dataFrame['sqft_living'].isnull().values.any())
 dataFrame = dataFrame.drop([
     'id',
     'date',
-    'sqft_living15',
-    'sqft_lot15'
+   # 'sqft_living15',
+   # 'sqft_lot15'
 ], axis=1)
 
 print(dataFrame.info())
@@ -30,13 +31,14 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 print(dataFrame.describe())
 
 
-dataFrame.hist()
+dataFrame.hist(figsize=(15, 10))
 plt.tight_layout()
 plt.show()
+plt.figure(figsize=(15, 10))
 sns.heatmap(dataFrame.corr(), annot=True)
 plt.tight_layout()
 plt.show()
-
+'''
 # Features with high correlation to price.
 # sqft_living, bathrooms, grade, sqft_above
 # Removing obsolete features
@@ -61,10 +63,9 @@ print(dataFrame.describe())
 sc = StandardScaler()
 standardizedDataFrame = sc.fit_transform(dataFrame)
 standardizedDataFrame = pd.DataFrame(standardizedDataFrame, columns=dataFrame.columns)
-standardizedDataFrame.plot(kind='box', figsize=(10, 10))
+standardizedDataFrame.plot(kind='box', figsize=(20, 10))
 plt.tight_layout()
 plt.show()
-
 # Removing outliers in all features, using IQR method.
 columns = list(dataFrame)
 print(columns)
@@ -84,10 +85,10 @@ dataFrame = dataFrame.dropna()
 # Standardising the data again to see if outliers have been removed
 standardizedDataFrame = sc.fit_transform(dataFrame)
 standardizedDataFrame = pd.DataFrame(standardizedDataFrame, columns=dataFrame.columns)
-standardizedDataFrame.plot(kind='box', figsize=(10, 10))
+standardizedDataFrame.plot(kind='box', figsize=(20, 10))
 plt.tight_layout()
 plt.show()
-
+'''
 # dataFrame = standardizedDataFrame - Was experimenting with running the rest of the code with standardised data - but it didn't change any results and only made the diagrams and predictions less readable.
 
 # Trying the linear regression method:
@@ -109,7 +110,7 @@ plt.show()
 # Splitting the data into train and test sets.
 def trainTestSplit(x, y):
 
-    X_train, X_test, y_train, y_test = train_test_split(x, y, random_state=10, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(x, y, random_state=10, test_size=0.19)
     # Checking proportions of the data sets, to get an idea if they have been split correctly
     print(X_train.shape)
     print(X_test.shape)
@@ -156,7 +157,8 @@ evaluateModel(y_test, y_predictions)
 # The scores here are somewhat low - meaning that this method might not be the best fit for our data, as there is a lot of variance not explained by the independent value. 
 
 # Trying out the multilinear method:
-X = dataFrame[['sqft_living', 'grade', 'sqft_above', 'bathrooms']]
+# X = dataFrame[['sqft_living', 'grade', 'sqft_above', 'bathrooms']]
+X = dataFrame[['sqft_living', 'grade', 'sqft_above', 'bathrooms', 'bedrooms', 'view', 'floors', 'waterfront', 'condition', 'yr_built', 'yr_renovated', 'sqft_lot15']]
 y = dataFrame['price']
 
 X_train, X_test, y_train, y_test = trainTestSplit(X, y)
@@ -194,8 +196,10 @@ print(y_predictions)
 print(y_test)
 
 #Visualising the results
+X_grid = np.arange(min(X_test), max(X_test), 0.1)
+X_grid = X_grid.reshape(len(X_grid), 1)
 plt.scatter(X, y, color='red')
-plt.plot(X_test, y_predictions, color='blue')
+plt.plot(X_grid, polynomialReg.predict(poly_model.fit_transform(X_grid)), color='blue')
 plt.title('Polynimial Regression')
 plt.xlabel('sqft_living')
 plt.ylabel('price')
