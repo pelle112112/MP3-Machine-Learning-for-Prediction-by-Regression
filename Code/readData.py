@@ -88,13 +88,41 @@ sns.displot(houseDf['price'], label = 'price', kde=True)
 plt.legend()
 plt.show()
 
+# visualise and remove Outliers
+
+def analyze_and_remove_outliers(data, feature='price', title='Outlier Analysis'):
+    plt.figure(figsize=(15,10))
+    sns.boxplot(x=data[feature])
+    plt.title(f'Boxplot of {feature} - {title}')
+    plt.show()
+
+    Q1 = data[feature].quantile(0.25)
+    Q3 = data[feature].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+
+    outliers = data[(data[feature] < lower_bound) | (data[feature] > upper_bound)]
+    print(f"Number of outliers: '{feature}': {len(outliers)}")
+
+    print("Descriptive Statistics before removing outliers:")
+
+    data_cleaned = data[(data[feature] >= lower_bound) & (data[feature] <= upper_bound)]
+
+    print("\nDescriptive Statistics after removing outliers:")
+    print(data_cleaned[feature].describe())
+
+    return data_cleaned
+
+cleanedDF = analyze_and_remove_outliers(houseDf, feature='price', title='Housing price analysis')
+
 
 
 # Train the model with Linear Regression
 
-X = houseDf['sqft_living'].values.reshape(-1,1)
-Y = houseDf['price'].values.reshape(-1,1)
-Z = houseDf['grade'].values.reshape(-1,1)
+X = cleanedDF['sqft_living'].values.reshape(-1,1)
+Y = cleanedDF['price'].values.reshape(-1,1)
+Z = cleanedDF['grade'].values.reshape(-1,1)
 
 # display how grade influece the house pricing
 
@@ -109,9 +137,10 @@ plt.xlabel('sqft_living')
 plt.scatter(X,Y, color='red')
 plt.show()
 
+
 # Split the data into training and testing sets
 
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=123)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.15, random_state=123)
 
 print(X_train.shape)
 print(Y_train.shape)
@@ -151,13 +180,13 @@ plt.show()
 #prepare the data
 
 feature_cols = ['bathrooms','sqft_living','grade','sqft_above','sqft_living15']
-Z = houseDf[feature_cols]
+Z = cleanedDF[feature_cols]
 Z.head(10)
 
 print(type(Z))
 print(Z.shape)
 
-Y = houseDf['price']
+Y = cleanedDF['price']
 Y.head(10)
 
 print(type(Y))
@@ -189,7 +218,6 @@ list(zip(feature_cols, linreg.coef_))
 
 Y_predicted = linreg.predict(Z_test)
 
-
 print(sm.mean_absolute_error(Y_test, Y_predicted))
 
 print(sm.mean_squared_error(Y_test, Y_predicted))
@@ -214,7 +242,7 @@ plt.show()
 
 # Fitting a polynomial Regression to the dataset
 
-poly_model = PolynomialFeatures(degree=5)
+poly_model = PolynomialFeatures(degree=4)
 X_poly = poly_model.fit_transform(X)
 pol_reg =LinearRegression()
 pol_reg.fit(X_poly,Y)
