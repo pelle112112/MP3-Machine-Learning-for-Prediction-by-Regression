@@ -229,14 +229,14 @@ eV = round(sm.explained_variance_score(Y_test, Y_predicted), 6)
 print('Explained variance score ',eV )
 
 # R-squared
-K = r2_score(Y_test, Y_predicted)
+R2 = r2_score(Y_test, Y_predicted)
 
 # Visualise the regression results
 plt.title('Multiple Linear Regression')
 plt.scatter(Y_test, Y_predicted, color='blue')
 plt.xlabel('best correlation att.')
 plt.ylabel('price')
-plt.text(0, -0.1, f'Score: {eV}', ha='left', va='center', transform=plt.gca().transAxes)
+plt.text(0, -0.1, f'Score: {R2}', ha='left', va='center', transform=plt.gca().transAxes)
 plt.show()
 
 
